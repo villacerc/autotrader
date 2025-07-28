@@ -1,9 +1,9 @@
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
-from typing import List, Dict
-from .base_agent import BaseAgent
-from ..database.models import StockPrice, SessionLocal
+from typing import List, Dict, Any
+from agents.base_agent import BaseAgent
+from database.models import StockPrice, SessionLocal
 
 class MarketDataAgent(BaseAgent):
     def __init__(self, symbols: List[str]):
