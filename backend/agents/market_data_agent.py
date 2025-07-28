@@ -23,6 +23,7 @@ class MarketDataAgent(BaseAgent):
             
             current_prices = {}
             
+            # yfinance structure changes based on how many symbols you request:
             if len(self.symbols) == 1:
                 # Single symbol case
                 if not tickers.empty:
