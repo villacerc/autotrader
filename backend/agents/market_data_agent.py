@@ -12,14 +12,14 @@ class MarketDataAgent(BaseAgent):
         self.current_prices = {}
         self.price_history = {}
         
-    def fetch_current_prices(self) -> Dict[str, float]:
+    def fetch_prices(self, interval: str = None, period: str = "1d") -> Dict[str, float]:
         """Fetch current prices for all symbols"""
         try:
             # Create a space-separated string of symbols for yfinance
             symbols_str = " ".join(self.symbols)
             
-            # Use yfinance library to download 1-minute interval data, returns a pandas DataFrame
-            tickers = yf.download(symbols_str, period="1d", interval="1m", progress=False)
+            # Use yfinance library to download data in intervals, returns a pandas DataFrame
+            tickers = yf.download(symbols_str, period=period, interval=interval, progress=False, auto_adjust=True)
             
             current_prices = {}
             
@@ -92,11 +92,13 @@ class MarketDataAgent(BaseAgent):
     def process(self) -> Dict[str, Any]:
         """Main processing method"""
         if not self.is_market_open():
-            self.log_action("Market is closed, skipping price fetch")
+            self.log_action("Market is closed, fetching last available prices")
+            if not self.current_prices:
+                self.current_prices = self.fetch_prices(interval="1m", period="1d")
             return {"status": "market_closed", "prices": self.current_prices}
         
         # Fetch current prices
-        prices = self.fetch_current_prices()
+        prices = self.fetch_prices(interval="1m", period="1d")
         
         if prices:
             # Store to database
