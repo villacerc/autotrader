@@ -107,10 +107,10 @@ class MarketDataAgent(BaseAgent):
             # Publish price update event
             self.publish_event("PRICE_UPDATE", {
                 "prices": prices,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(datetime.timezone.utc).isoformat()
             })
             
-            self.last_update = datetime.utcnow()
+            self.last_update = datetime.now(datetime.timezone.utc)
             return {"status": "success", "prices": prices}
         else:
             return {"status": "error", "prices": {}}
