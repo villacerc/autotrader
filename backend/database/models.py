@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, create_engine
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, create_engine, Index, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base # for defining ORM models
 from sqlalchemy.orm import sessionmaker # for creating database sessions 
 from datetime import datetime, timezone
@@ -13,6 +13,11 @@ class StockPrice(Base): # Represents stock price data, inherits from Base
     timestamp = Column(DateTime, default=datetime.now(timezone.utc))
     price = Column(Float, nullable=False)
     volume = Column(Integer, default=0)
+
+    __table_args__ = (
+        Index('idx_symbol_timestamp', 'symbol', 'timestamp'),
+        UniqueConstraint('symbol', 'timestamp', name='uix_symbol_timestamp'),
+    )
     
 class Trade(Base):
     __tablename__ = "trades"

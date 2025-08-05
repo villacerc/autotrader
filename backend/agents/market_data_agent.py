@@ -105,7 +105,6 @@ class MarketDataAgent(BaseAgent):
             self.log_action(f"Error fetching historical prices: {str(e)}")
             return {}
 
-
     def is_market_open(self) -> bool:
         """Simple market hours check (US Eastern Time)"""
         now = datetime.now()
@@ -121,7 +120,8 @@ class MarketDataAgent(BaseAgent):
         if not self.is_market_open():
             self.log_action("Market is closed, fetching last available prices")
             if not self.current_prices:
-                self.current_prices = self.fetch_current_prices()
+                self.current_prices = self.fetch_historical_prices()
+                self.store_prices_to_db(self.current_prices)
             return {"status": "market_closed", "prices": self.current_prices}
         
         # Fetch current prices
