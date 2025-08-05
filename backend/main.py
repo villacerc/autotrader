@@ -20,11 +20,15 @@ def main():
     
     if result["status"] == "success":
         print("\n🎉 SUCCESS! Current prices:")
-        for symbol, price in result["prices"].items():
+        for symbol, (price, timestamp) in result["prices"].items():
             print(f"  {symbol}: ${price:.2f}")
     else:
         print(f"\n❌ Status: {result['status']}")
-        print("Prices from cache:", result.get("prices", {}))
+        print("Prices from cache:")
+        for symbol, price_list in result["prices"].items():
+            for price, timestamp in price_list:
+                print(f"  {symbol}: ${price:.2f} at {timestamp.strftime('%Y-%m-%d')}")
+
     
     print(f"\n🔄 Market open: {market_agent.is_market_open()}")
     print(f"🕐 Last update: {market_agent.last_update}")

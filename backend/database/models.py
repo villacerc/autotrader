@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, create_engine
 from sqlalchemy.ext.declarative import declarative_base # for defining ORM models
 from sqlalchemy.orm import sessionmaker # for creating database sessions 
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base() # Base class for ORM models
 
@@ -10,7 +10,7 @@ class StockPrice(Base): # Represents stock price data, inherits from Base
     
     id = Column(Integer, primary_key=True)
     symbol = Column(String(10), nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.now(timezone.utc))
     price = Column(Float, nullable=False)
     volume = Column(Integer, default=0)
     
