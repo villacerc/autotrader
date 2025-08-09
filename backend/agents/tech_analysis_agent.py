@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from agents.base_agent import BaseAgent
 from database.models import SessionLocal, StockPrice
 
@@ -25,7 +25,7 @@ class TechnicalAnalysisAgent(BaseAgent):
         db = SessionLocal()
         try:
             # Get data from last N days
-            cutoff_date = datetime.now(datetime.timezone.utc) - timedelta(days=days)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
             
             prices = db.query(StockPrice).filter(
                 StockPrice.symbol == symbol,
@@ -292,7 +292,7 @@ class TechnicalAnalysisAgent(BaseAgent):
                     'error': str(e)
                 }
         
-        self.last_update = datetime.utcnow()
+        self.last_update = datetime.now(timezone.utc)
         return results
     
     def get_current_signals(self) -> Dict:

@@ -118,7 +118,7 @@ class MarketDataAgent(BaseAgent):
     def process(self) -> Dict[str, Any]:
         """Main processing method"""
         if not self.is_market_open():
-            self.log_action("Market is closed, fetching last available prices")
+            self.log_action("Market is closed, fetching historical prices")
             if not self.current_prices:
                 self.current_prices = self.fetch_historical_prices()
                 self.store_prices_to_db(self.current_prices)
