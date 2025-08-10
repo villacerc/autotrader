@@ -58,8 +58,9 @@ class NewsSentimentAgent(BaseAgent):
         self.news_sources = {
             'yahoo_finance': 'https://feeds.finance.yahoo.com/rss/2.0/headline',
             'marketwatch': 'https://feeds.marketwatch.com/marketwatch/realtimeheadlines/',
-            'reuters_business': 'https://feeds.reuters.com/reuters/businessNews',
-            'cnbc_markets': 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114'
+            'reuters_business': 'https://ir.thomsonreuters.com/rss/news-releases.xml',
+            'cnbc_markets': 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114',
+            'motley_fool': 'https://www.fool.com/a/feeds/foolwatch?apikey=foolwatch-feed',
         }
         
         self.log_action("Initialized News Sentiment Agent", 
@@ -72,25 +73,29 @@ class NewsSentimentAgent(BaseAgent):
         try:
             async with session.get(url, timeout=15) as response:
                 content = await response.text()
-                feed = feedparser.parse(content)
+                feed = feedparser.parse(content) # Parse XML RSS feed into a Python object.
                 
                 articles = []
-                for entry in feed.entries[:15]:  # Recent articles only
+                for entry in feed.entries[:15]:  # Process only the first 15 entries
                     # Parse publication date
                     pub_date = datetime.now()
                     if hasattr(entry, 'published_parsed') and entry.published_parsed:
-                        pub_date = datetime(*entry.published_parsed[:6])
+                        # entry.published_parsed from feedparser is usually a time tuple
+                        # Example: time.struct_time(tm_year=2025, tm_mon=8, tm_mday=9, tm_hour=14, tm_min=30, tm_sec=0, ...)
+                        # * Unpacking the tuple to get the first 6 elements
+                        # Example: datetime(2025, 8, 9, 14, 30, 0)
+                        pub_date = datetime(*entry.published_parsed[:6]) 
                     
-                    # Get article content
+                    # Tries to extract content from the entry
                     content = getattr(entry, 'summary', '') or getattr(entry, 'description', '')
-                    
+
                     article = NewsArticle(
                         title=entry.title,
                         content=content,
                         source=source_name,
                         published=pub_date,
                         url=entry.link,
-                        symbols=self._extract_symbols(entry.title + " " + content)
+                        symbols=self._extract_symbols(entry.title + " " + content) # List of ticker symbols extracted from title + content
                     )
                     articles.append(article)
                 
@@ -124,20 +129,23 @@ class NewsSentimentAgent(BaseAgent):
     
     async def fetch_all_news(self) -> List[NewsArticle]:
         """Fetch news from all sources"""
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession() as session: # Create a session for each source
             tasks = []
             for source_name, url in self.news_sources.items():
                 task = self.fetch_news_from_rss(session, source_name, url)
                 tasks.append(task)
             
+            # Gather results from all sources concurrently
+            # return_exceptions=True means that if one feed errors out, the others still complete
             results = await asyncio.gather(*tasks, return_exceptions=True)
             
+            # Flatten results into a single list
             all_articles = []
             for result in results:
                 if isinstance(result, list):
                     all_articles.extend(result)
             
-            # Filter for portfolio-relevant news
+            # Keep articles that have ticker symbols (article.symbols) or are generally market relevant
             relevant_articles = [
                 article for article in all_articles 
                 if article.symbols or self._is_market_relevant(article)
@@ -153,6 +161,8 @@ class NewsSentimentAgent(BaseAgent):
             'market', 'stock', 'trading', 'investor', 'economy', 'earnings'
         ]
         text = (article.title + " " + article.content).lower()
+
+        # Returns True if any market keyword is found in the text
         return any(keyword in text for keyword in market_keywords)
     
     def analyze_sentiment_with_groq(self, article: NewsArticle, symbol: str = None) -> SentimentResult:

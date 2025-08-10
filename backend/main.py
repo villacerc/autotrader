@@ -42,9 +42,9 @@ async def main():
     # for symbol, analysis in analysis_results.items():
     #     print(f"{symbol}: {analysis_results[symbol]}")
 
-    # news_agent = NewsSentimentAgent(symbols)
-    # results = await news_agent.process()
-    # print(results)
+    news_agent = NewsSentimentAgent(symbols)
+    results = await news_agent.process()
+    print(results)
 
 
 
