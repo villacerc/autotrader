@@ -1,9 +1,11 @@
 from agents.market_data_agent import MarketDataAgent
 from agents.tech_analysis_agent import TechnicalAnalysisAgent
+from agents.news_sentiment_agent import NewsSentimentAgent
 from database.models import create_tables
 import time
+import asyncio
 
-def main():
+async def main():
     print("🚀 Starting Portfolio Bot MVP...")
     
     # # Create database tables
@@ -40,7 +42,11 @@ def main():
     # for symbol, analysis in analysis_results.items():
     #     print(f"{symbol}: {analysis_results[symbol]}")
 
+    # news_agent = NewsSentimentAgent(symbols)
+    # results = await news_agent.process()
+    # print(results)
+
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

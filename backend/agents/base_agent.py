@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod # abstract base class (abc) for creating abstract classes
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 import logging
 
@@ -28,7 +28,7 @@ class BaseAgent(ABC): # Base class for all agents
         event = {
             "type": event_type,
             "source": self.name,
-            "timestamp": datetime.utcnow(),
+            "timestamp": datetime.now(timezone.utc),
             "data": data
         }
         # For now, just log - we'll add real event system later
